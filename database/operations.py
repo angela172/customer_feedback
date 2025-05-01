@@ -16,62 +16,69 @@ def save_form_data(form_data):
     """Save form data to the database using SQLAlchemy"""
     try:
         print("Starting save_form_data with SQLAlchemy...")
+        print(f"Form data to save: {form_data}")
         
         # Ensure database tables exist
-        init_database_tables()
+        if not init_database_tables():
+            print("Failed to initialize database tables")
+            return False
         
         # Get database session
         db_gen = get_db_session()
         session = next(db_gen)
         
-        # Debug print - console only
-        print(f"Form data: {form_data}")
-        
-        # Handle potential NPS value conversion
-        nps_value = None
-        if 'nps' in form_data:
-            try:
-                nps_value = int(form_data['nps']) if form_data['nps'] is not None else None
-                print(f"Converted NPS value: {nps_value}")
-            except (ValueError, TypeError):
-                print(f"Invalid NPS value: {form_data.get('nps')}")
-                nps_value = None
-        
-        # Create a new Feedback record
-        print("Creating Feedback record object...")
-        feedback_record = Feedback(
-            timestamp=datetime.now(),
-            name=str(form_data.get('name', '')),
-            email=str(form_data.get('email', '')),
-            phone=str(form_data.get('phone', '')),
-            language=str(form_data.get('language', '')),
-            nps=nps_value,
-            first_visit=str(form_data.get('first_visit', '')),
-            satisfaction=str(form_data.get('satisfaction', '')),
-            satisfaction_reason=str(form_data.get('satisfaction_reason', '')),
-            dissatisfaction_reason=str(form_data.get('dissatisfaction_reason', '')),
-            dissatisfaction_reason_text=str(form_data.get('specific_reason', '')),
-            feedback=str(form_data.get('feedback', '')),
-            branch=str(form_data.get('branch', '')),
-        )
-        
-        # Display the record we're about to save - console only
-        print("About to save record:", vars(feedback_record))
-        
-        # Add and commit the record
-        print("Adding record to session...")
-        session.add(feedback_record)
-        print("Committing to database...")
-        session.commit()
-        print("Commit successful!")
-        
-        # Close the session
         try:
-            next(db_gen)  # This will trigger the finally block in get_db_session
-        except StopIteration:
-            pass
+            # Handle potential NPS value conversion
+            nps_value = None
+            if 'nps' in form_data:
+                try:
+                    nps_value = int(form_data['nps']) if form_data['nps'] is not None else None
+                    print(f"Converted NPS value: {nps_value}")
+                except (ValueError, TypeError):
+                    print(f"Invalid NPS value: {form_data.get('nps')}")
+                    nps_value = None
             
-        return True
+            # Create a new Feedback record
+            print("Creating Feedback record object...")
+            feedback_record = Feedback(
+                timestamp=datetime.now(),
+                name=str(form_data.get('name', '')),
+                email=str(form_data.get('email', '')),
+                phone=str(form_data.get('phone', '')),
+                language=str(form_data.get('language', '')),
+                nps=nps_value,
+                first_visit=str(form_data.get('first_visit', '')),
+                satisfaction=str(form_data.get('satisfaction', '')),
+                satisfaction_reason=str(form_data.get('satisfaction_reason', '')),
+                dissatisfaction_reason=str(form_data.get('dissatisfaction_reason', '')),
+                dissatisfaction_reason_text=str(form_data.get('specific_reason', '')),
+                feedback=str(form_data.get('feedback', '')),
+                branch=str(form_data.get('branch', '')),
+            )
+            
+            # Display the record we're about to save - console only
+            print("About to save record:", vars(feedback_record))
+            
+            # Add and commit the record
+            print("Adding record to session...")
+            session.add(feedback_record)
+            print("Committing to database...")
+            session.commit()
+            print("Commit successful!")
+            return True
+            
+        except Exception as e:
+            print(f"Error during database operation: {str(e)}")
+            session.rollback()
+            return False
+            
+        finally:
+            # Close the session
+            try:
+                next(db_gen)  # This will trigger the finally block in get_db_session
+            except StopIteration:
+                pass
+                
     except Exception as e:
         print(f"Error in save_form_data: {str(e)}")
         # Print more detail about the error - console only
