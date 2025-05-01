@@ -47,16 +47,11 @@ def init_database_tables():
         print(f"Directory permissions: {oct(os.stat(current_dir).st_mode)[-3:]}")
         return False
 
-def get_db_session():
-    """Get database session"""
+def get_db():
+    """Get a database session"""
+    db = SessionLocal()
     try:
-        print("Creating new database session...")  # Debug print
-        db = SessionLocal()
-        try:
-            yield db
-        finally:
-            print("Closing database session...")  # Debug print
-            db.close()
+        return db
     except Exception as e:
         print(f"Error creating database session: {str(e)}")
         raise 
