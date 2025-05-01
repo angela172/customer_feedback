@@ -66,3 +66,8 @@ static/images/generated/
 *.pyo
 *.pyd
 *.so 
+
+#secrets
+.secrets.toml
+.secrets/
+.streamlit/secrets.toml
