@@ -3,8 +3,7 @@ from .connection import Base
 
 class Feedback(Base):
     __tablename__ = 'feedback_db'
-    __table_args__ = {'schema': 'public'}
-
+    
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime)
     name = Column(String(255))
