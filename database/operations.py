@@ -26,7 +26,7 @@ def get_direct_connection():
             host=DB_HOST,
             port=DB_PORT,
             database=DB_NAME,
-            user=DB_USERNAME,
+            user=DB_USER,
             password=DB_PASSWORD
         )
         return conn
