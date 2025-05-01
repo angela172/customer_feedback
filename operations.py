@@ -6,11 +6,12 @@ from database.models import Feedback
 from database.connection import get_db_session
 
 # PostgreSQL connection credentials
-DB_HOST = "103.173.18.175"
-DB_PORT = 5432
-DB_NAME = "CustomerFeedback"
-DB_USERNAME = "postgres"  # You may need to update this
-DB_PASSWORD = "Po$tgr3$18Sol"  # You may need to update this
+
+DB_USER = st.secrets["DB_USER"]
+DB_PASSWORD = st.secrets["DB_PASSWORD"]
+DB_NAME = st.secrets["DB_NAME"]
+DB_HOST = st.secrets["DB_HOST"]
+DB_PORT = st.secrets["DB_PORT"]
 
 def set_branch_from_url():
     query_params = st.query_params
