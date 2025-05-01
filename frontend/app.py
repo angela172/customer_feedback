@@ -928,6 +928,10 @@ def main():
     # Initialize database tables
     init_database_tables()
     
+    # Get the absolute path to the parent directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    
     # Load CSS 
     # Custom CSS for styling
     st.markdown("""

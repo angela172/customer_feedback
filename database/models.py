@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from .connection import Base
 
 class Feedback(Base):
     __tablename__ = 'feedback_db'
