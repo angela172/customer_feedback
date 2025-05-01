@@ -7,16 +7,56 @@ from sqlalchemy.orm import Session
 
 def set_branch_from_url():
     """Set the branch from URL query parameters"""
-    query_params = st.query_params
-    branch = query_params.get('branch', None)
-    if branch:
-        st.session_state.form_data['branch'] = branch
-    return branch
+    try:
+        # First try to get branch from query params
+        branch = st.query_params.get('branch', None)
+        print(f"Branch from query params: {branch}")  # Debug print
+        
+        # If no branch in query params, try to extract from hostname
+        if not branch:
+            hostname = st.query_params.get("_st_url", "")
+            print(f"Hostname from URL: {hostname}")  # Debug print
+            
+            if hostname:
+                # Extract subdomain from hostname
+                # Format: https://ajmalfeedback-dubai.streamlit.app
+                parts = hostname.split("//")[1].split(".")
+                if len(parts) >= 2 and "ajmalfeedback-" in parts[0]:
+                    branch = parts[0].replace("ajmalfeedback-", "")
+                    print(f"Extracted branch from hostname: {branch}")  # Debug print
+        
+        # If still no branch, use a default
+        if not branch:
+            branch = "dubai"  # Change this to your default branch
+            print(f"Using default branch: {branch}")  # Debug print
+        
+        # Set the branch in form data
+        if branch:
+            st.session_state.form_data['branch'] = branch
+            print(f"Branch set to: {branch}")  # Debug print
+        
+        return branch
+        
+    except Exception as e:
+        print(f"Error setting branch from URL: {str(e)}")
+        return None
 
 def save_form_data(form_data: dict) -> bool:
     """Save form data to the database"""
     print("Starting save_form_data function...")  # Debug print
     print(f"Form data to save: {form_data}")  # Debug print
+    
+    # Validate required fields
+    required_fields = ['name', 'email', 'phone', 'branch']
+    for field in required_fields:
+        if not form_data.get(field):
+            print(f"Missing required field: {field}")
+            return False
+    
+    # Validate email format
+    if '@' not in form_data['email'] or not form_data['email'].endswith('.com'):
+        print("Invalid email format")
+        return False
     
     # Ensure database tables are initialized
     if not init_database_tables():
@@ -28,8 +68,12 @@ def save_form_data(form_data: dict) -> bool:
         # Get database session
         db = get_db()
         
+        # Create new feedback entry with timestamp
+        feedback_data = form_data.copy()
+        feedback_data['timestamp'] = datetime.now()
+        
         # Create new feedback entry
-        feedback = Feedback(**form_data)
+        feedback = Feedback(**feedback_data)
         
         # Add to session and commit
         db.add(feedback)
@@ -39,6 +83,8 @@ def save_form_data(form_data: dict) -> bool:
         
     except Exception as e:
         print(f"Error saving form data: {str(e)}")
+        print(f"Error type: {type(e)}")
+        print(f"Error details: {str(e)}")
         if db:
             db.rollback()
         return False
