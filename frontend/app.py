@@ -925,7 +925,7 @@ def set_branch_from_url():
     """Set branch from URL parameters or subdomain"""
     try:
         # Get the current URL from the query parameters
-        current_url = st.experimental_get_query_params().get("_st_url", [""])[0]
+        current_url = st.query_params.get("_st_url", "")
         if current_url:
             # Extract subdomain from URL
             # Format: https://ajmalfeedback-dubai.streamlit.app
