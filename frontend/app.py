@@ -14,10 +14,11 @@ import time
 
 
 # Fix import path for the database module
+# In frontend/app.py
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+root_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
 # Now we can import from database module
 from database.connection import init_database_tables
