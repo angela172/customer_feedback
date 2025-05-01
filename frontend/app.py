@@ -924,17 +924,33 @@ def handle_next_navigation():
 def set_branch_from_url():
     """Set branch from URL parameters or subdomain"""
     try:
-        # Get the current URL from the query parameters
-        current_url = st.query_params.get("_st_url", "")
-        if current_url:
-            # Extract subdomain from URL
+        # Get the hostname from the current URL
+        hostname = st.experimental_get_query_params().get("_st_url", [""])[0]
+        print(f"Current hostname: {hostname}")  # Debug print
+        
+        if hostname:
+            # Extract subdomain from hostname
             # Format: https://ajmalfeedback-dubai.streamlit.app
-            subdomain = current_url.split("//")[1].split(".")[0]
-            if subdomain and "ajmalfeedback-" in subdomain:
-                return subdomain.replace("ajmalfeedback-", "")
+            parts = hostname.split("//")[1].split(".")
+            if len(parts) >= 2 and "ajmalfeedback-" in parts[0]:
+                branch = parts[0].replace("ajmalfeedback-", "")
+                print(f"Extracted branch: {branch}")  # Debug print
+                return branch
+        
+        # If we couldn't extract from URL, try to get from query params
+        branch = st.query_params.get("branch", None)
+        if branch:
+            print(f"Branch from query params: {branch}")  # Debug print
+            return branch
+            
+        # If still no branch, use a default
+        default_branch = "dubai"  # Change this to your default branch
+        print(f"Using default branch: {default_branch}")  # Debug print
+        return default_branch
+        
     except Exception as e:
         print(f"Error extracting branch from URL: {str(e)}")
-    return None
+        return "dubai"  # Fallback to default branch
 
 def main():
     """Main application function"""
