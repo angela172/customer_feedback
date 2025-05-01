@@ -922,9 +922,25 @@ def handle_next_navigation():
             print("=== FORM SUBMISSION ENDED ===\n")
 
 def set_branch_from_url():
-    """Set branch from URL parameters"""
-    query_params = st.experimental_get_query_params()
-    return query_params.get("branch", None)
+    """Set branch from URL parameters or subdomain"""
+    # First try to get branch from query parameters
+    branch = st.query_params.get("branch", None)
+    
+    # If no branch in query params, try to get it from the subdomain
+    if not branch:
+        try:
+            # Get the current URL
+            current_url = st.experimental_get_query_params().get("_st_url", [""])[0]
+            if current_url:
+                # Extract subdomain from URL
+                # Format: https://ajmalfeedback-dubai.streamlit.app
+                subdomain = current_url.split("//")[1].split(".")[0]
+                if subdomain and "ajmalfeedback-" in subdomain:
+                    branch = subdomain.replace("ajmalfeedback-", "")
+        except Exception as e:
+            print(f"Error extracting branch from URL: {str(e)}")
+    
+    return branch
 
 def main():
     """Main application function"""
@@ -935,10 +951,11 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(current_dir)
     
-    # Set branch from URL parameters
+    # Set branch from URL parameters or subdomain
     branch = set_branch_from_url()
     if branch:
         st.session_state.form_data['branch'] = branch
+        print(f"Branch set to: {branch}")  # Debug print
     
     # Load CSS 
     # Custom CSS for styling
