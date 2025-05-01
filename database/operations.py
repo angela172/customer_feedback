@@ -2,23 +2,27 @@ import streamlit as st
 from datetime import datetime
 import traceback
 from database.models import Feedback
-from database.connection import get_db_session
+from database.connection import get_db_session, init_database_tables
 
 def set_branch_from_url():
+    """Set the branch from URL query parameters"""
     query_params = st.query_params
     branch = query_params.get('branch', None)
     if branch:
         st.session_state.form_data['branch'] = branch
+    return branch
 
 def save_form_data(form_data):
     """Save form data to the database using SQLAlchemy"""
     try:
         print("Starting save_form_data with SQLAlchemy...")
         
-        session = get_db_session()
-        if not session:
-            print("No database session available")
-            return False
+        # Ensure database tables exist
+        init_database_tables()
+        
+        # Get database session
+        db_gen = get_db_session()
+        session = next(db_gen)
         
         # Debug print - console only
         print(f"Form data: {form_data}")
@@ -60,7 +64,13 @@ def save_form_data(form_data):
         print("Committing to database...")
         session.commit()
         print("Commit successful!")
-        session.close()
+        
+        # Close the session
+        try:
+            next(db_gen)  # This will trigger the finally block in get_db_session
+        except StopIteration:
+            pass
+            
         return True
     except Exception as e:
         print(f"Error in save_form_data: {str(e)}")
@@ -72,15 +82,17 @@ def save_form_data(form_data):
 def phone_exists_in_database(phone_number):
     """Check if the phone number already exists in the database using SQLAlchemy"""
     try:
-        session = get_db_session()
-        if not session:
-            return False
+        db_gen = get_db_session()
+        session = next(db_gen)
         
         # Query for existing phone number
         existing_record = session.query(Feedback).filter(Feedback.phone == phone_number).first()
         
         # Close the session
-        session.close()
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
         
         # Return True if the phone number already exists
         return existing_record is not None
@@ -92,15 +104,17 @@ def phone_exists_in_database(phone_number):
 def get_phone_occurrence_count(phone_number):
     """Check how many times a phone number appears in the database using SQLAlchemy"""
     try:
-        session = get_db_session()
-        if not session:
-            return 0
+        db_gen = get_db_session()
+        session = next(db_gen)
         
         # Query for phone number occurrences
         count = session.query(Feedback).filter(Feedback.phone == phone_number).count()
         
         # Close the session
-        session.close()
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
         
         # Return the count
         return count
@@ -109,7 +123,7 @@ def get_phone_occurrence_count(phone_number):
             print(f"Error checking phone number count in database: {str(e)}")
         return 0
 
-# Remove redundant branch handling code
+# Initialize form data if not exists
 if 'form_data' not in st.session_state:
     st.session_state.form_data = {}
         

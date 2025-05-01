@@ -921,7 +921,10 @@ def handle_next_navigation():
             
             print("=== FORM SUBMISSION ENDED ===\n")
 
-
+def set_branch_from_url():
+    """Set branch from URL parameters"""
+    query_params = st.experimental_get_query_params()
+    return query_params.get("branch", None)
 
 def main():
     """Main application function"""
@@ -931,6 +934,11 @@ def main():
     # Get the absolute path to the parent directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(current_dir)
+    
+    # Set branch from URL parameters
+    branch = set_branch_from_url()
+    if branch:
+        st.session_state.form_data['branch'] = branch
     
     # Load CSS 
     # Custom CSS for styling
