@@ -9,7 +9,7 @@ def init_connection():
     """Initialize database connection. This function will be cached and only run once, unless invalidated"""
     try:
         # PostgreSQL connection string
-        DATABASE_URL = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         
         # Create engine
         engine = create_engine(DATABASE_URL)
