@@ -20,17 +20,8 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # Now we can import from database module
-try:
-    from database.connection import init_database_tables
-except ModuleNotFoundError:
-    # fallback if relative import fails
-    import importlib.util
-    db_path = os.path.join(parent_dir, "database", "connection.py")
-    spec = importlib.util.spec_from_file_location("connection", db_path)
-    connection = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(connection)
-    init_database_tables = connection.init_database_tables
-    
+from database.connection import init_database_tables
+
 from database.operations import save_form_data, phone_exists_in_database, get_phone_occurrence_count
 
 # Global constants
