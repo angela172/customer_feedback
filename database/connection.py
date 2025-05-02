@@ -7,6 +7,11 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'feedback.db')
 
+# Delete existing database file if it exists
+if os.path.exists(db_path):
+    print(f"Removing existing database file: {db_path}")
+    os.remove(db_path)
+
 # Ensure the database directory exists and is writable
 os.makedirs(current_dir, exist_ok=True)
 
@@ -36,6 +41,8 @@ def init_database_tables():
         print("Initializing database tables...")  # Debug print
         # Import models here to avoid circular imports
         from .models import Feedback
+        # Drop all existing tables
+        Base.metadata.drop_all(bind=engine)
         # Create all tables
         Base.metadata.create_all(bind=engine)
         print("Database tables initialized successfully")  # Debug print

@@ -922,35 +922,40 @@ def handle_next_navigation():
             print("=== FORM SUBMISSION ENDED ===\n")
 
 def set_branch_from_url():
-    """Set branch from URL parameters or subdomain"""
+    """Set the branch from URL query parameters"""
     try:
-        # Get the hostname from the current URL
-        hostname = st.experimental_get_query_params().get("_st_url", [""])[0]
-        print(f"Current hostname: {hostname}")  # Debug print
+        # First try to get branch from query params
+        branch = st.query_params.get('branch', None)
+        print(f"Branch from query params: {branch}")  # Debug print
         
-        if hostname:
-            # Extract subdomain from hostname
-            # Format: https://ajmalfeedback-dubai.streamlit.app
-            parts = hostname.split("//")[1].split(".")
-            if len(parts) >= 2 and "ajmalfeedback-" in parts[0]:
-                branch = parts[0].replace("ajmalfeedback-", "")
-                print(f"Extracted branch: {branch}")  # Debug print
-                return branch
-        
-        # If we couldn't extract from URL, try to get from query params
-        branch = st.query_params.get("branch", None)
-        if branch:
-            print(f"Branch from query params: {branch}")  # Debug print
-            return branch
+        # If no branch in query params, try to extract from hostname
+        if not branch:
+            hostname = st.query_params.get("_st_url", "")
+            print(f"Hostname from URL: {hostname}")  # Debug print
             
+            if hostname:
+                # Extract subdomain from hostname
+                # Format: https://ajmalfeedback-dubai.streamlit.app
+                parts = hostname.split("//")[1].split(".")
+                if len(parts) >= 2 and "ajmalfeedback-" in parts[0]:
+                    branch = parts[0].replace("ajmalfeedback-", "")
+                    print(f"Extracted branch from hostname: {branch}")  # Debug print
+        
         # If still no branch, use a default
-        default_branch = "dubai"  # Change this to your default branch
-        print(f"Using default branch: {default_branch}")  # Debug print
-        return default_branch
+        if not branch:
+            branch = "dubai"  # Change this to your default branch
+            print(f"Using default branch: {branch}")  # Debug print
+        
+        # Set the branch in form data
+        if branch:
+            st.session_state.form_data['branch'] = branch
+            print(f"Branch set to: {branch}")  # Debug print
+        
+        return branch
         
     except Exception as e:
-        print(f"Error extracting branch from URL: {str(e)}")
-        return "dubai"  # Fallback to default branch
+        print(f"Error setting branch from URL: {str(e)}")
+        return None
 
 def main():
     """Main application function"""
